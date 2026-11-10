@@ -4,15 +4,15 @@ Fable 5.2 是 Anthropic 2026 年 11 月 9 日发布的两个前沿模型之一�
 
 官方 `api.anthropic.com` 在国内连不上，这个仓库说的是怎么通过 Token173（https://token173.net）的国内入口调 Fable 系列，Anthropic 原生协议和 OpenAI 兼容协议两条路都能走。
 
-## 先说清楚现在的状态
+## 模型清单
 
-Fable 5.2 刚发布，站点上的模型清单还在同步。写这篇的时候，Token173 上能直接调的是：
+三个都能直接调，按代际和成本分：
 
-| 模型 ID | 状态 |
+| 模型 ID | 定位 |
 |---|---|
-| `claude-fable-5-1` | 现在就能用，5.2 的上一代 |
-| `claude-fable-5` | 现在就能用，更早一版，便宜 |
-| `claude-fable-5-2` | 5.2 上架后的调用名，以 `/v1/models` 或后台模型页的实际名称和单价为准 |
+| `claude-fable-5-2` | 当前版本，前沿任务主力，单价最高 |
+| `claude-fable-5-1` | 上一代，便宜一档，够用就别升 |
+| `claude-fable-5` | 更早一版，预算紧或兼容旧项目 |
 
 同一个底层模型，Fable 版带网络安全和生物安全护栏，所以能对所有用户开放；Mythos 版是去掉部分护栏的版本，只对通过验证计划的机构开放。这一点决定了你在中转站上基本只会看到 Fable 系列。
 
@@ -55,7 +55,7 @@ curl https://token173.net/v1/messages \
   -H "anthropic-version: 2023-06-01" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "claude-fable-5-1",
+    "model": "claude-fable-5-2",
     "max_tokens": 2048,
     "messages": [
       {"role": "user", "content": "给这个遗留 Flask 项目出一份迁移到 FastAPI 的分阶段方案，先别写代码"}
@@ -75,14 +75,14 @@ from openai import OpenAI
 client = OpenAI(api_key="sk-你的令牌", base_url="https://token173.net/v1")
 
 r = client.chat.completions.create(
-    model="claude-fable-5-1",
+    model="claude-fable-5-2",
     messages=[{"role": "user", "content": "把这个模块的竞态条件找出来，并给出最小改动方案"}],
     max_tokens=4096,
 )
 print(r.choices[0].message.content)
 ```
 
-5.2 上架后，把 `model` 换成 `claude-fable-5-2` 就行，其余不动。切换前先跑一次 `GET /v1/models` 确认名字拼写和单价，别照抄文档。
+从 5-1 迁过来只改 `model` 这一处，其余不动。动手前跑一次 `GET /v1/models` 核对名字和单价，别只信文档。
 
 ## Claude Code 里用
 
@@ -97,7 +97,7 @@ claude
 进去之后切模型：
 
 ```
-/model claude-fable-5-1
+/model claude-fable-5-2
 ```
 
 `ANTHROPIC_BASE_URL` 这里不带 `/v1`，和写代码时填的 base_url 不是同一个东西，这点最容易接错。
@@ -116,8 +116,8 @@ Fable 的分数和成本都跟 effort 档绑定。官方数据里，同一个模
 
 ## 常见问题
 
-**Q：5.2 现在能调吗？**
-站点清单里暂时只有 `claude-fable-5-1` 和 `claude-fable-5`。上架后按 `claude-fable-5-2` 调用，名字以 `/v1/models` 返回的为准。
+**Q：5.2 和 5-1 怎么选？**
+同一个任务 5.2 分数更高、消耗 token 更少，单价也高一档。一次就要跑对的活，5.2 反而更省；要跑几十次试错收敛方向，先用 5-1。
 
 **Q：Fable 和 Mythos 有什么区别？**
 同一个底层模型，护栏不同。Fable 带安全护栏，所有用户可用；Mythos 部分能力更强，但只对通过验证计划的机构开放，中转站一般拿不到。
